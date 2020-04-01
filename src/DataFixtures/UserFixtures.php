@@ -22,8 +22,8 @@ class UserFixtures extends Fixture
     {
         // create objects
         $userUser = $this->createUser('user@user.com', 'user');
-        $userAdmin = $this->createUser('admin@admin.com', 'admin', ['ROLE_ADMIN']);
-        $userMatt = $this->createUser('matt.smith@smith.com', 'smith', ['ROLE_SUPER_ADMIN']);
+        $userAdmin = $this->createUser('admin@admin.com', 'admin', 'ROLE_ADMIN');
+        $userMatt = $this->createUser('matt.smith@smith.com', 'smith', 'ROLE_SUPER_ADMIN');
 
         // add to DB queue
         $manager->persist($userUser);
@@ -35,11 +35,11 @@ class UserFixtures extends Fixture
 
     }
 
-    private function createUser($username, $plainPassword, $roles = ['ROLE_USER']):User
+    private function createUser($username, $plainPassword, $role = 'ROLE_USER'):User
     {
         $user = new User();
         $user->setEmail($username);
-        $user->setRoles($roles);
+        $user->setRole($role);
 
         // password - and encoding
         $encodedPassword = $this->passwordEncoder->encodePassword($user, $plainPassword);

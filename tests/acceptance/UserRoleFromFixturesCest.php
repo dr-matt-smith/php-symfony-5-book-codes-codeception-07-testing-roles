@@ -10,7 +10,7 @@ class UserRoleFromFixturesCest
     /**
      * perform login with given email/password
      */
-    private function helperLogin(AcceptanceTester $I, $email, $password)
+    private function login(AcceptanceTester $I, $email, $password)
     {
         $I->amOnPage('/login');
         $I->expect('redirect to Login page');
@@ -18,6 +18,10 @@ class UserRoleFromFixturesCest
         $I->fillField('#inputEmail', $email);
         $I->fillField('#inputPassword', $password);
         $I->click('Login');
+
+        // successful login
+        $I->dontSee('Email could not be found.');
+        $I->dontSee('Invalid credentials.');
     }
 
     // PRIVATE - this is a "helper" method, NOT called by Codeception
@@ -58,7 +62,7 @@ class UserRoleFromFixturesCest
      * ACTION - click admin home link
      * ASSERT - see admin secrets
      */
-    private function visitAdminGetNotAuthorisedMessage(AcceptanceTester $I)
+    private function visitAdminSeeAccessDeniedMessage(AcceptanceTester $I)
     {
         $I->amOnPage('/admin');
         $I->expect('to see not authorised error');
@@ -72,12 +76,12 @@ class UserRoleFromFixturesCest
     /**
      * @example(email="user@user.com", password="user")
      */
-    public function validUserRoleUserCannotVisitAdminHomePage(AcceptanceTester $I, Example $example)
+    public function validUserRoleUserCannotSeeLinkToAdminHomePage(AcceptanceTester $I, Example $example)
     {
         // ARRANGE: login
         $email = $example['email'];
         $password = $example['password'];
-        $this->helperLogin($I, $email, $password);
+        $this->login($I, $email, $password);
 
         // ASSERT: NOT authorised
         $this->dontSeeAdminHomeLink($I);
@@ -86,15 +90,15 @@ class UserRoleFromFixturesCest
     /**
      * @example(email="user@user.com", password="user")
      */
-    public function validUserRoleUserGetsNotAuthorisedMessageWhenTryVisitAdminHomePage(AcceptanceTester $I, Example $example)
+    public function validUserRoleUserGetsAccessDeniedMessageWhenTryVisitAdminHomePage(AcceptanceTester $I, Example $example)
     {
         // ARRANGE: login
         $email = $example['email'];
         $password = $example['password'];
-        $this->helperLogin($I, $email, $password);
+        $this->login($I, $email, $password);
 
         // ASSERT: NOT authorised - error message when try to visit admin after login
-        $this->visitAdminGetNotAuthorisedMessage($I);
+        $this->visitAdminSeeAccessDeniedMessage($I);
     }
 
     /**
@@ -106,7 +110,7 @@ class UserRoleFromFixturesCest
         // (1) arrange - login
         $email = $example['email'];
         $password = $example['password'];
-        $this->helperLogin($I, $email, $password);
+        $this->login($I, $email, $password);
 
         // ASSERT: authorised
         $this->seeAdminHomeLink($I);
@@ -121,137 +125,9 @@ class UserRoleFromFixturesCest
         // (1) arrange - login
         $email = $example['email'];
         $password = $example['password'];
-        $this->helperLogin($I, $email, $password);
+        $this->login($I, $email, $password);
 
         // ASSERT: can access  secure pages
         $this->clickAdminHomeLinkAndSeeSecrets($I);
     }
-
-//    /**
-//     * @example(email="user@user.com", password="user")
-//     */
-//    public function validUserUserCannotVisitAdminHomePage(AcceptanceTester $I, Example $example)
-//    {
-//        $email = $example['email'];
-//        $password = $example['password'];
-//
-//        $I->amOnPage('/admin');
-//        $I->expect('redirect to Login page');
-//        $I->seeCurrentUrlEquals('/login');
-//        $I->fillField('#inputEmail', $email);
-//        $I->fillField('#inputPassword', $password);
-//        $I->click('Login');
-//
-//        $I->expect('redirect to Home page - with NOT link to admin home');
-//        $I->dontSeeLink('admin home');
-//    }
-
-//    /**
-//     * @example(email="matt.smith@smith.com", password="smith")
-//     * @example(email="admin@admin.com", password="admin")
-//     */
-//    public function validAdminUserCanVisitAdminHomePage(AcceptanceTester $I, Example $example)
-//    {
-//        // (1) Arrange
-//        $email = $example['email'];
-//        $password = $example['password'];
-//
-//        $I->amOnPage('/admin');
-//        $I->expect('redirect to Login page');
-//        $I->seeCurrentUrlEquals('/login');
-//        $I->fillField('#inputEmail', $email);
-//        $I->fillField('#inputPassword', $password);
-//        $I->click('Login');
-//
-//        $I->expect('redirect to Home page -but with a link to admin home');
-//        $I->seeLink('admin home');
-//        $I->click('admin home');
-//
-//        $I->expect('now be at admin home page');
-//        $I->seeCurrentUrlEquals('/admin');
-//        $I->see('here is the secret code to the safe');
-//    }
-//
-//    public function fixtures2CannotAccessAddmmin(AcceptanceTester $I)
-//    {
-//        // (1) Arrange
-//        $email = 'matt.smith@smith.com';
-//        $password = 'smith';
-//
-//        $I->amOnPage('/admin');
-//        $I->expect('redirect to Login page');
-//        $I->seeCurrentUrlEquals('/login');
-//        $I->fillField('#inputEmail', $email);
-//        $I->fillField('#inputPassword', $password);
-//        $I->click('Login');
-//
-//        $I->expect('redirect to Home page -but with a link to admin home');
-//        $I->seeLink('admin home');
-//        $I->click('admin home');
-//
-//        $I->expect('now be at admin home page');
-//        $I->seeCurrentUrlEquals('/admin');
-//        $I->see('here is the secret code to the safe');
-//    }
-
-
-//
-//    public function createdValidAdminUserCanVisitAdminHomePage(AcceptanceTester $I)
-//    {
-//        $email = 'userTemp@temp.com';
-//        $password = 'fredAdmin';
-//        $roles = ['ROLE_USER'];
-//        $I->haveInRepository('App\Entity\User', [
-//            'email' => $email,
-//            'password' => $password,
-//            'roles' => $roles
-//        ]);
-//
-//        // test whether user `userTemp@temp.com`  can be FOUND in the table
-//        $I->seeInRepository('App\Entity\User', [
-//            'email' => $email
-//        ]);
-//
-//        // (1) arrange
-//        $email = 'fredAdmin@fred.com';
-//        $password = 'fredAdmin';
-//        $roles = ['ROLE_ADMIN'];
-//        // INSERT new user `userTemp@temp.com` into the User table
-//        $I->haveInRepository('App\Entity\User', [
-//            'email' => $email,
-//            'password' => $password,
-//            'roles' => $roles
-//        ]);
-//
-//
-//        $I->seeInRepository('App\Entity\User', [
-//            'email' => $email,
-//        ]);
-//
-//
-//        // (2) Act & Assert
-//        $I->amOnPage('/login');
-//        $I->expect('redirect to Login page');
-//        $I->seeCurrentUrlEquals('/login');
-//        $I->fillField('#inputEmail', $email);
-//        $I->fillField('#inputPassword', $password);
-//        $I->click('Login');
-//
-//        $I->expect('redirect to Home page -but with a link to admin home');
-//
-//        $I->dontSee('Invalid credentials.');
-//        $I->dontSee('Email could not be found.');
-//
-//
-//        $I->seeLink('admin home');
-//        $I->click('admin home');
-//
-//        $I->expect('now be at admin home page');
-//        $I->seeCurrentUrlEquals('/admin');
-//        $I->see('here is the secret code to the safe');
-//    }
-
-
-
-
 }
